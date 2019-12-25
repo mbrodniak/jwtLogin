@@ -17,9 +17,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.*;
 import javax.validation.Valid;
 import java.util.Base64;
 import java.util.HashSet;
@@ -44,6 +46,9 @@ public class AuthRestAPIs {
 
     @Autowired
     JwtProvider jwtProvider;
+
+    @Autowired
+    SessionRegistry sessionRegistry;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginForm loginRequest) {
@@ -127,5 +132,28 @@ public class AuthRestAPIs {
         byte[] decode = Base64.getDecoder().decode(credential);
         return new String(decode);
     }
+
+    @GetMapping("/getAuthenticated")
+    public List<Object> getAuthenticated(){
+        List<Object> allAuthenticatedUsers = sessionRegistry.getAllPrincipals();
+
+        return allAuthenticatedUsers;
+    }
+
+    @PostMapping("/logout")
+    public String logout(){
+
+        try{
+            UserPrincipal user =  (UserPrincipal)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            List<SessionInformation> allSessions = sessionRegistry.getAllSessions(user, true);
+            sessionRegistry.getSessionInformation(allSessions.get(0).getSessionId()).expireNow();
+        }
+        catch (Exception e){
+            return e.getMessage();
+        }
+
+        return "Logged out";
+    }
+
 
 }

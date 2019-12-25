@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Appointment;
 import com.example.demo.repository.AppointmentRepository;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,8 @@ public class AppointmentService {
     private final Integer startHour = 6;
     private final Integer endHour = 23;
     private final Integer minute = 0;
+
+//    private final org.apache.logging.log4j.Logger log = (Logger) java.util.logging.Logger.getLogger(getClass().getName());
 
 
     @Autowired
@@ -40,6 +43,22 @@ public class AppointmentService {
             appointmentHours.add(hour);
         }
         return appointmentHours;
+    }
+
+    public boolean insertAppointment(Timestamp date){
+
+        try {
+            Appointment appointment = new Appointment();
+            appointment.setDate(date);
+            appointmentRepository.save(appointment);
+            return true;
+        }
+        catch (Exception e){
+//            log.error(e.getMessage());
+            System.out.println(e.getMessage());
+        }
+
+        return false;
     }
 //
 //    public Timestamp getDate(String week, int day, int hour, int minute){
